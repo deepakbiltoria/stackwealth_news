@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:stackwealth_news/counter/counter.dart';
+import 'package:stackwealth_news/features/counter/counter.dart';
 import 'package:stackwealth_news/l10n/l10n.dart';
 
 class App extends StatelessWidget {

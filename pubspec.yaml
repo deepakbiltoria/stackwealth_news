@@ -14,11 +14,23 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   intl: ^0.19.0
+  cached_network_image:
+  equatable:
+  infinite_scroll_pagination:
+  dartz:
+  dio:
+  json_annotation:
+  flutter_dotenv:
+  provider: ^6.1.4
+  internet_connection_checker:
 
 dev_dependencies:
-  bloc_test: ^9.1.7
   flutter_test:
     sdk: flutter
+  flutter_lints:
+  build_runner:
+  json_serializable:
+  mockito:
   mocktail: ^1.0.4
   very_good_analysis: ^6.0.0
 
