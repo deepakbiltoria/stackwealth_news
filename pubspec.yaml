@@ -23,6 +23,8 @@ dependencies:
   flutter_dotenv:
   provider: ^6.1.4
   internet_connection_checker:
+  go_router: ^15.0.0
+
 
 dev_dependencies:
   flutter_test:
@@ -37,3 +39,6 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   generate: true
+  assets:
+#    - assets/
+    - .env

@@ -14,5 +14,5 @@ class Article extends Equatable {
   });
 
   @override
-  List<Object?> get props => [title, source, publishedAt];
+  List<Object?> get props => [title, source, publishedAt, description];
 }
