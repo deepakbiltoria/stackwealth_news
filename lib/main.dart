@@ -1,13 +1,17 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:stackwealth_news/core/providers/dio_provider.dart';
+import 'package:stackwealth_news/core/utils/color_constant.dart';
+import 'package:stackwealth_news/core/utils/logger.dart';
 import 'package:stackwealth_news/features/home/data/datasources/remote/news_remote_dataSource.dart';
 import 'package:stackwealth_news/features/home/data/repositories/news_repository_impl.dart';
 import 'package:stackwealth_news/features/home/domain/usecases/get_articles.dart';
 import 'package:stackwealth_news/features/home/presentation/bloc/news_bloc.dart';
-import 'package:stackwealth_news/features/home/presentation/screens/news_screen.dart';
+import 'package:stackwealth_news/features/splash/presentation/screens/splash_screen.dart';
 
 import 'core/providers/internet_status_provider.dart';
 
@@ -17,7 +21,17 @@ void main() async {
   // Check environment setting (if you're passing via --dart-define)
   // const renderer = String.fromEnvironment('RENDERER', defaultValue: 'unknown');
 
-  runApp(AppWrapper());
+  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      statusBarColor: ColorConstant.themeColor,
+      statusBarIconBrightness: Brightness.light));
+
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+  ]).then((value) {
+    Logger.init(kReleaseMode ? LogMode.live : LogMode.debug);
+
+    runApp(AppWrapper());
+  });
 }
 
 class AppWrapper extends StatelessWidget {
@@ -62,8 +76,30 @@ class MyApp extends StatelessWidget {
       title: 'News App',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+        fontFamily: 'poppins',
+        scaffoldBackgroundColor: ColorConstant.whiteA700,
+        appBarTheme: const AppBarTheme(
+          foregroundColor: Colors.white,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          iconTheme: IconThemeData(color: Colors.white),
+        ),
+        colorScheme: ColorScheme.fromSwatch(
+          primarySwatch:
+              ColorConstant.neutralThemeSwatch, // deep purple/sleek theme
+        ).copyWith(
+          primary: ColorConstant.deepPurplePrimary,
+          secondary: ColorConstant.slateGray500, // use a nice gray as accent
+          onPrimary: Colors.white,
+          background: ColorConstant.whiteA700,
+          surface: ColorConstant.gray100,
+          onBackground: ColorConstant.gray900,
+          onSurface: ColorConstant.gray700,
+          error: Colors.redAccent,
+          onError: Colors.white,
+        ),
+        primaryColor: ColorConstant.deepPurplePrimary,
+        primarySwatch: ColorConstant.neutralThemeSwatch,
       ),
       home: Consumer<InternetStatusProvider>(
         builder: (context, provider, child) {
@@ -81,8 +117,9 @@ class MyApp extends StatelessWidget {
             } else {
               scaffoldMessenger.hideCurrentSnackBar();
             }
+            provider.dispose();
           });
-          return const NewsScreen();
+          return SplashScreen();
         },
       ),
     );

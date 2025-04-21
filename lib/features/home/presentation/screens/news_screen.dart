@@ -1,10 +1,12 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:stackwealth_news/core/utils/color_constant.dart';
 import 'package:stackwealth_news/core/utils/date_utils.dart';
 import 'package:stackwealth_news/features/home/domain/entities/article.dart';
 import 'package:stackwealth_news/features/home/presentation/bloc/news_event.dart';
+import 'package:stackwealth_news/features/home/presentation/widgets/news_details.dart';
+import 'package:stackwealth_news/theme/app_decoration.dart';
+import 'package:stackwealth_news/theme/app_style.dart';
 
 import '../bloc/news_bloc.dart';
 import '../bloc/news_state.dart';
@@ -27,11 +29,28 @@ class _NewsScreenState extends State<NewsScreen> {
     _scrollController.addListener(_onScroll);
   }
 
+  // void _onScroll() {
+  //   if (_scrollController.position.pixels >=
+  //       _scrollController.position.maxScrollExtent - 200) {
+  //     final state = context.read<NewsBloc>().state;
+  //     if (state is NewsLoaded && !state.hasReachedMax) {
+  //       context.read<NewsBloc>().add(NewsFetchedNextPage());
+  //     }
+  //   }
+  // }
   void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
-      final state = context.read<NewsBloc>().state;
+    final max = _scrollController.position.maxScrollExtent;
+    final current = _scrollController.position.pixels;
+
+    print(' SCROLLING... current=$current, max=$max');
+
+    final state = context.read<NewsBloc>().state;
+    if (current >= max - 200) {
+      if (state is NewsLoaded) {
+        print(' state.hasReachedMax: ${state.hasReachedMax}');
+      }
       if (state is NewsLoaded && !state.hasReachedMax) {
+        print(' Dispatching NewsFetchedNextPage...');
         context.read<NewsBloc>().add(NewsFetchedNextPage());
       }
     }
@@ -64,37 +83,53 @@ class _NewsScreenState extends State<NewsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('News')),
+      backgroundColor: ColorConstant.gray5001,
+      appBar: AppBar(
+        title:
+            Text('📰 Latest News', style: AppStyle.txtPoppinsBold16Orange700),
+        centerTitle: true,
+        backgroundColor: ColorConstant.whiteA700,
+        elevation: 1,
+        iconTheme: IconThemeData(color: ColorConstant.orange700),
+      ),
       body: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(12.0),
         child: Column(
           children: [
-            // Search Bar
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _searchController,
-                    decoration: const InputDecoration(
-                      hintText: 'Enter topic (e.g. technology, sports)...',
-                      border: OutlineInputBorder(),
-                    ),
-                    onSubmitted: (_) => _onSearch(),
+            // 🔎 Search Bar
+            Container(
+              decoration: AppDecoration.outlineGray30001.copyWith(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: TextField(
+                controller: _searchController,
+                style: AppStyle.txtPoppinsMedium14Black900,
+                decoration: InputDecoration(
+                  prefixIcon: Icon(Icons.search, color: ColorConstant.gray600),
+                  suffixIcon: IconButton(
+                    icon: Icon(Icons.clear, color: ColorConstant.gray600),
+                    onPressed: () {
+                      _searchController.clear();
+                      setState(() {
+                        _lastQuery = "";
+                      });
+                    },
                   ),
+                  hintText: 'Search: Technology, Health, Politics...',
+                  hintStyle: AppStyle.txtPoppinsRegular12Gray60002,
+                  border: InputBorder.none,
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: _onSearch,
-                  child: const Icon(Icons.search),
-                ),
-              ],
+                onSubmitted: (_) => _onSearch(),
+              ),
             ),
             const SizedBox(height: 12),
-            // News List & States
+
+            // 📰 News Feed
             Expanded(
               child: BlocConsumer<NewsBloc, NewsState>(
                 listener: (context, state) {
-                  // Handle partial errors (e.g., pagination failure)
                   if (state is NewsPartialError) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text(state.message)),
@@ -105,27 +140,39 @@ class _NewsScreenState extends State<NewsScreen> {
                   if (state is NewsLoading) {
                     return const Center(child: CircularProgressIndicator());
                   } else if (state is NewsError) {
-                    log('error displayed on main screen ${state.message}');
                     return Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
+                          Icon(Icons.error_outline,
+                              color: ColorConstant.orange700, size: 48),
+                          const SizedBox(height: 10),
                           Text(state.message,
-                              style: const TextStyle(color: Colors.red)),
-                          const SizedBox(height: 8),
+                              style: AppStyle.txtPoppinsRegular12Orange700),
+                          const SizedBox(height: 12),
                           ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: ColorConstant.orange700,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
                             onPressed: () =>
                                 context.read<NewsBloc>().add(NewsRefreshed()),
-                            child: const Text('Retry'),
+                            child: Text('Retry',
+                                style: AppStyle.txtPoppinsMedium12WhiteA700),
                           ),
                         ],
                       ),
                     );
                   } else if (state is NewsLoaded) {
                     if (state.articles.isEmpty) {
-                      return const Center(
-                          child: Text('No articles found for this topic.'));
+                      return Center(
+                        child: Text('🔍 No results found.',
+                            style: AppStyle.txtPoppinsRegular12Gray60002),
+                      );
                     }
+
                     return ListView.builder(
                       controller: _scrollController,
                       itemCount: state.hasReachedMax
@@ -133,31 +180,99 @@ class _NewsScreenState extends State<NewsScreen> {
                           : state.articles.length + 1,
                       itemBuilder: (context, index) {
                         if (index >= state.articles.length) {
-                          // Show loading indicator at the end for pagination
                           return const Padding(
                             padding: EdgeInsets.symmetric(vertical: 16),
                             child: Center(child: CircularProgressIndicator()),
                           );
                         }
+
                         final article = state.articles[index];
-                        return ListTile(
-                          title: Text(
-                            article.title,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          subtitle: Text(
-                            '${article.source} · ${DateTimeTools.formatDate(article.publishedAt)}\n${article.description ?? ""}',
-                            maxLines: 3,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                        return GestureDetector(
                           onTap: () => _openDetail(article),
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(vertical: 8),
+                            decoration:
+                                AppDecoration.outlineBlack9003f1.copyWith(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (article.urlToImage != null)
+                                  ClipRRect(
+                                    borderRadius: const BorderRadius.vertical(
+                                        top: Radius.circular(12)),
+                                    child: Image.network(
+                                      article.urlToImage!,
+                                      height: 180,
+                                      width: double.infinity,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) =>
+                                          const SizedBox.shrink(),
+                                    ),
+                                  ),
+                                Padding(
+                                  padding: const EdgeInsets.all(12.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        article.title,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: AppStyle
+                                            .txtPoppinsSemiBold16Gray90002,
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        article.description ?? '',
+                                        maxLines: 3,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: AppStyle
+                                            .txtPoppinsRegular12Gray60002,
+                                      ),
+                                      const SizedBox(height: 10),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              '${article.source} • ${article.author ?? "Unknown"}',
+                                              overflow: TextOverflow.ellipsis,
+                                              style: AppStyle
+                                                  .txtPoppinsMedium10Black900,
+                                            ),
+                                          ),
+                                          Text(
+                                            article.publishedAt != null &&
+                                                    article.publishedAt
+                                                        .toString()
+                                                        .isNotEmpty
+                                                ? DateTimeTools.formatDate(
+                                                    article.publishedAt!)
+                                                : '',
+                                            style: AppStyle
+                                                .txtPoppinsRegular10Gray60002,
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         );
                       },
                     );
                   }
-                  // Initial or unknown state
-                  return const Center(child: Text('Search for news!'));
+
+                  return Center(
+                    child: Text('🔍 Start by searching for news.',
+                        style: AppStyle.txtPoppinsRegular12Gray60002),
+                  );
                 },
               ),
             ),
@@ -169,34 +284,34 @@ class _NewsScreenState extends State<NewsScreen> {
 }
 
 // Mock detail screen for demonstration
-class NewsDetailScreen extends StatelessWidget {
-  final Article article;
-  const NewsDetailScreen({Key? key, required this.article}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(article.title)),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(article.source,
-                  style: const TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              Text(DateTimeTools.formatDate(article.publishedAt),
-                  style: const TextStyle(color: Colors.grey)),
-              const SizedBox(height: 16),
-              Text(
-                article.description ?? "No description available.",
-                maxLines: null,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
+// class NewsDetailScreen extends StatelessWidget {
+//   final Article article;
+//   const NewsDetailScreen({Key? key, required this.article}) : super(key: key);
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(title: Text(article.title)),
+//       body: SingleChildScrollView(
+//         child: Padding(
+//           padding: const EdgeInsets.all(16.0),
+//           child: Column(
+//             crossAxisAlignment: CrossAxisAlignment.start,
+//             children: [
+//               Text(article.source,
+//                   style: const TextStyle(fontWeight: FontWeight.bold)),
+//               const SizedBox(height: 8),
+//               Text(DateTimeTools.formatDate(article.publishedAt),
+//                   style: const TextStyle(color: Colors.grey)),
+//               const SizedBox(height: 16),
+//               Text(
+//                 article.description ?? "No description available.",
+//                 maxLines: null,
+//               ),
+//             ],
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+// }
