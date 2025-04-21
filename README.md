@@ -6,6 +6,12 @@
 
 This Flutter application is built with Clean Architecture principles and uses BLoC for state management. It fetches news data from the News API, supports search and pagination, and caches the last 5 search queries and their results **in-session** (in-memory) to enable offline access for recent searches.
 
+### Screenshots
+![splash](https://github.com/user-attachments/assets/8c9bdb70-aa47-44ae-a4e8-fbdd3f111349)
+![home](https://github.com/user-attachments/assets/ba1b37f0-9c03-4218-b561-7fba41c34c0f)
+![home loaded](https://github.com/user-attachments/assets/446cb785-0eae-4d39-8bd1-43fd8c5bc4bb)
+![details screen](https://github.com/user-attachments/assets/a2742efc-d2b7-47df-b2a6-049765611fea)
+
 ---
 
 ## How to Set Up and Run the Project Locally
