@@ -85,8 +85,7 @@ class _NewsScreenState extends State<NewsScreen> {
     return Scaffold(
       backgroundColor: ColorConstant.gray5001,
       appBar: AppBar(
-        title:
-            Text('📰 Latest News', style: AppStyle.txtPoppinsBold16Orange700),
+        title: Text('📰 Latest News', style: AppStyle.txtPoppinsBold16Black900),
         centerTitle: true,
         backgroundColor: ColorConstant.whiteA700,
         elevation: 1,
@@ -97,32 +96,54 @@ class _NewsScreenState extends State<NewsScreen> {
         child: Column(
           children: [
             // 🔎 Search Bar
-            Container(
-              decoration: AppDecoration.outlineGray30001.copyWith(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: TextField(
-                controller: _searchController,
-                style: AppStyle.txtPoppinsMedium14Black900,
-                decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.search, color: ColorConstant.gray600),
-                  suffixIcon: IconButton(
-                    icon: Icon(Icons.clear, color: ColorConstant.gray600),
-                    onPressed: () {
-                      _searchController.clear();
-                      setState(() {
-                        _lastQuery = "";
-                      });
-                    },
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    decoration: AppDecoration.outlineGray30001.copyWith(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: TextField(
+                      controller: _searchController,
+                      style: AppStyle.txtPoppinsMedium14Black900,
+                      decoration: InputDecoration(
+                        prefixIcon:
+                            Icon(Icons.search, color: ColorConstant.gray600),
+                        suffixIcon: IconButton(
+                          icon: Icon(Icons.clear, color: ColorConstant.gray600),
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() {
+                              _lastQuery = "";
+                            });
+                          },
+                        ),
+                        hintText: 'Search: Technology, Health, Politics...',
+                        hintStyle: AppStyle.txtPoppinsRegular12Gray60002,
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 14),
+                      ),
+                      onSubmitted: (_) => _onSearch(),
+                    ),
                   ),
-                  hintText: 'Search: Technology, Health, Politics...',
-                  hintStyle: AppStyle.txtPoppinsRegular12Gray60002,
-                  border: InputBorder.none,
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 ),
-                onSubmitted: (_) => _onSearch(),
-              ),
+                const SizedBox(width: 8),
+                SizedBox(
+                  height: 48, // Match this with your TextField height
+                  child: ElevatedButton(
+                    // style: ElevatedButton.styleFrom(
+                    //   backgroundColor: ColorConstant.slate500,
+                    //   shape: RoundedRectangleBorder(
+                    //     borderRadius: BorderRadius.circular(12),
+                    //   ),
+                    //   padding: const EdgeInsets.symmetric(horizontal: 16),
+                    // ),
+                    onPressed: _onSearch,
+                    child: Icon(Icons.search, color: ColorConstant.whiteA700),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 12),
 
