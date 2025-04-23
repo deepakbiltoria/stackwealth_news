@@ -23,7 +23,7 @@ dependencies:
   flutter_dotenv:
   provider:
   internet_connection_checker:
-  go_router:
+  go_router: 15.1.1
   animated_splash_screen:
   get:
   page_transition:
