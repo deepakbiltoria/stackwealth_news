@@ -21,7 +21,7 @@ dependencies:
   dio:
   json_annotation:
   flutter_dotenv:
-  provider:
+  provider: 6.1.5
   internet_connection_checker:
   go_router:
   animated_splash_screen:
